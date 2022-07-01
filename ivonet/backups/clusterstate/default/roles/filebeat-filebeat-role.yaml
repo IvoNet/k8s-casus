@@ -1,0 +1,23 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  annotations:
+    meta.helm.sh/release-name: filebeat
+    meta.helm.sh/release-namespace: default
+  creationTimestamp: "2022-07-01T19:34:13Z"
+  labels:
+    app: filebeat-filebeat
+    app.kubernetes.io/managed-by: Helm
+  name: filebeat-filebeat-role
+  namespace: default
+  resourceVersion: "19334"
+  uid: 8769aab2-666a-49e7-8220-ffccb42fbb67
+rules:
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - create
+  - update

@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+data:
+  spec:
+    template:
+      $patch: replace
+      metadata:
+        annotations:
+          cluster-autoscaler.kubernetes.io/daemonset-pod: "true"
+        creationTimestamp: null
+        labels:
+          k8s-app: cloud-node-manager
+      spec:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.azure.com/cluster
+                  operator: Exists
+                - key: type
+                  operator: NotIn
+                  values:
+                  - virtual-kubelet
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                  - linux
+        containers:
+        - command:
+          - cloud-node-manager
+          - --node-name=$(NODE_NAME)
+          - --wait-routes
+          env:
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          image: mcr.microsoft.com/oss/kubernetes/azure-cloud-node-manager:v1.1.14
+          imagePullPolicy: IfNotPresent
+          name: cloud-node-manager
+          resources:
+            limits:
+              cpu: "2"
+              memory: 512Mi
+            requests:
+              cpu: 50m
+              memory: 50Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        hostNetwork: true
+        priorityClassName: system-node-critical
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: cloud-node-manager
+        serviceAccountName: cloud-node-manager
+        terminationGracePeriodSeconds: 30
+        tolerations:
+        - key: CriticalAddonsOnly
+          operator: Exists
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
+          operator: Equal
+          value: "true"
+        - effect: NoExecute
+          operator: Exists
+        - effect: NoSchedule
+          operator: Exists
+kind: ControllerRevision
+metadata:
+  annotations:
+    deprecated.daemonset.template.generation: "1"
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"apps/v1","kind":"DaemonSet","metadata":{"annotations":{},"labels":{"addonmanager.kubernetes.io/mode":"Reconcile","k8s-app":"cloud-node-manager","kubernetes.io/cluster-service":"true"},"name":"cloud-node-manager","namespace":"kube-system"},"spec":{"selector":{"matchLabels":{"k8s-app":"cloud-node-manager"}},"template":{"metadata":{"annotations":{"cluster-autoscaler.kubernetes.io/daemonset-pod":"true"},"labels":{"k8s-app":"cloud-node-manager"}},"spec":{"affinity":{"nodeAffinity":{"requiredDuringSchedulingIgnoredDuringExecution":{"nodeSelectorTerms":[{"matchExpressions":[{"key":"kubernetes.azure.com/cluster","operator":"Exists"},{"key":"type","operator":"NotIn","values":["virtual-kubelet"]},{"key":"kubernetes.io/os","operator":"In","values":["linux"]}]}]}}},"containers":[{"command":["cloud-node-manager","--node-name=$(NODE_NAME)","--wait-routes"],"env":[{"name":"NODE_NAME","valueFrom":{"fieldRef":{"fieldPath":"spec.nodeName"}}}],"image":"mcr.microsoft.com/oss/kubernetes/azure-cloud-node-manager:v1.1.14","imagePullPolicy":"IfNotPresent","name":"cloud-node-manager","resources":{"limits":{"cpu":"2000m","memory":"512Mi"},"requests":{"cpu":"50m","memory":"50Mi"}}}],"hostNetwork":true,"priorityClassName":"system-node-critical","serviceAccountName":"cloud-node-manager","tolerations":[{"key":"CriticalAddonsOnly","operator":"Exists"},{"effect":"NoSchedule","key":"node-role.kubernetes.io/master","operator":"Equal","value":"true"},{"effect":"NoExecute","operator":"Exists"},{"effect":"NoSchedule","operator":"Exists"}]}}}}
+  creationTimestamp: "2022-07-01T18:15:41Z"
+  labels:
+    controller-revision-hash: 79b7d44f67
+    k8s-app: cloud-node-manager
+  name: cloud-node-manager-79b7d44f67
+  namespace: kube-system
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: DaemonSet
+    name: cloud-node-manager
+    uid: 08fa0a44-ef4a-4074-82af-cb60e18f31db
+  resourceVersion: "433"
+  uid: e711133e-7ab0-4363-b5bc-dd671d004901
+revision: 1

@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2022-07-01T19:18:47Z"
+  finalizers:
+  - service.kubernetes.io/load-balancer-cleanup
+  labels:
+    app: kibana
+    heritage: Helm
+    release: kibana
+  name: kibana-kibana
+  namespace: default
+  resourceVersion: "16458"
+  uid: f5825d58-9461-4b27-979a-c0c5d8456147
+spec:
+  allocateLoadBalancerNodePorts: true
+  clusterIP: 10.0.132.110
+  clusterIPs:
+  - 10.0.132.110
+  externalTrafficPolicy: Cluster
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: http
+    nodePort: 30891
+    port: 80
+    protocol: TCP
+    targetPort: 5601
+  selector:
+    app: kibana
+    release: kibana
+  sessionAffinity: None
+  type: LoadBalancer
+status:
+  loadBalancer:
+    ingress:
+    - ip: 20.103.97.8

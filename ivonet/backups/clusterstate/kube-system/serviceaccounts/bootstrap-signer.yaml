@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: "2022-07-01T18:15:25Z"
+  name: bootstrap-signer
+  namespace: kube-system
+  resourceVersion: "257"
+  uid: 2121e6aa-31cf-4655-8f89-9b1566bfab3d
+secrets:
+- name: bootstrap-signer-token-47x87

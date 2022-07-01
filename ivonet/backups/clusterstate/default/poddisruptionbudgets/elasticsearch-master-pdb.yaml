@@ -1,0 +1,32 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  annotations:
+    meta.helm.sh/release-name: elasticsearch
+    meta.helm.sh/release-namespace: default
+  creationTimestamp: "2022-07-01T18:50:53Z"
+  generation: 1
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  name: elasticsearch-master-pdb
+  namespace: default
+  resourceVersion: "9817"
+  uid: fa6f4357-c69f-4754-a76a-7d49d11f649b
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: elasticsearch-master
+status:
+  conditions:
+  - lastTransitionTime: "2022-07-01T18:53:06Z"
+    message: ""
+    observedGeneration: 1
+    reason: SufficientPods
+    status: "True"
+    type: DisruptionAllowed
+  currentHealthy: 3
+  desiredHealthy: 2
+  disruptionsAllowed: 1
+  expectedPods: 3
+  observedGeneration: 1

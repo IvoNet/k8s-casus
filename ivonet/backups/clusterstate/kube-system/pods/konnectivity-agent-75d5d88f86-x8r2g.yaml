@@ -1,0 +1,180 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    checksum/client-cert: db82c016b2a90fddf1920ed4c2abf8ce40afe03089ce8a96256e2f6533f2e112
+    checksum/service-account-key: d05f8397f62550e97ea6a6ea64f04369d78f25e8d83a1cff46f65ea7848e0093
+  creationTimestamp: "2022-07-01T18:19:12Z"
+  generateName: konnectivity-agent-75d5d88f86-
+  labels:
+    app: konnectivity-agent
+    component: tunnel
+    pod-template-hash: 75d5d88f86
+  name: konnectivity-agent-75d5d88f86-x8r2g
+  namespace: kube-system
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: ReplicaSet
+    name: konnectivity-agent-75d5d88f86
+    uid: f73adcca-adc9-41d3-b702-9d6e6af23803
+  resourceVersion: "1918"
+  uid: 69616e36-a50d-49ca-9ffb-622da3feac19
+spec:
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - preference:
+          matchExpressions:
+          - key: kubernetes.azure.com/mode
+            operator: In
+            values:
+            - system
+        weight: 100
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app
+              operator: In
+              values:
+              - konnectivity-agent
+          topologyKey: failure-domain.beta.kubernetes.io/zone
+        weight: 10
+      - podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app
+              operator: In
+              values:
+              - konnectivity-agent
+          topologyKey: kubernetes.io/hostname
+        weight: 5
+  automountServiceAccountToken: false
+  containers:
+  - args:
+    - --proxy-server-host=acldys-7ea05377.hcp.westeurope.azmk8s.io
+    - --proxy-server-port=443
+    - --health-server-port=8082
+    - --agent-key=/certs/client.key
+    - --agent-cert=/certs/client.crt
+    - --ca-cert=/certs/ca.crt
+    - --alpn-proto=konnectivity
+    - -v=2
+    command:
+    - /proxy-agent
+    env:
+    - name: KUBERNETES_PORT_443_TCP_ADDR
+      value: acldys-7ea05377.hcp.westeurope.azmk8s.io
+    - name: KUBERNETES_PORT
+      value: tcp://acldys-7ea05377.hcp.westeurope.azmk8s.io:443
+    - name: KUBERNETES_PORT_443_TCP
+      value: tcp://acldys-7ea05377.hcp.westeurope.azmk8s.io:443
+    - name: KUBERNETES_SERVICE_HOST
+      value: acldys-7ea05377.hcp.westeurope.azmk8s.io
+    image: mcr.microsoft.com/oss/kubernetes/apiserver-network-proxy/agent:v0.0.30
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /ready
+        port: 8082
+        scheme: HTTP
+      initialDelaySeconds: 30
+      periodSeconds: 60
+      successThreshold: 1
+      timeoutSeconds: 60
+    name: konnectivity-agent
+    readinessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /ready
+        port: 8082
+        scheme: HTTP
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 1
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 20m
+        memory: 20Mi
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /certs
+      name: certs
+  dnsPolicy: Default
+  enableServiceLinks: true
+  nodeName: aks-agentpool-11515983-vmss000001
+  nodeSelector:
+    beta.kubernetes.io/os: linux
+  preemptionPolicy: PreemptLowerPriority
+  priority: 2000001000
+  priorityClassName: system-node-critical
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: konnectivity-agent
+  serviceAccountName: konnectivity-agent
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - key: CriticalAddonsOnly
+    operator: Exists
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 30
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 30
+  - effect: NoSchedule
+    key: node.kubernetes.io/memory-pressure
+    operator: Exists
+  volumes:
+  - name: certs
+    secret:
+      defaultMode: 420
+      secretName: konnectivity-certs
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-01T18:19:12Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-01T18:19:14Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-01T18:19:14Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-01T18:19:12Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://e486831856368bdb76f91faa0030d33660002b18bab54fd5f8f93265c95452d0
+    image: mcr.microsoft.com/oss/kubernetes/apiserver-network-proxy/agent:v0.0.30
+    imageID: sha256:f450da74f8249b03b9ba503aed475a686dff63c934027b16cbb39054294cf931
+    lastState: {}
+    name: konnectivity-agent
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2022-07-01T18:19:13Z"
+  hostIP: 10.224.0.5
+  phase: Running
+  podIP: 10.244.1.4
+  podIPs:
+  - ip: 10.244.1.4
+  qosClass: Burstable
+  startTime: "2022-07-01T18:19:12Z"

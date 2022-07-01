@@ -1,0 +1,304 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: "2022-07-01T18:16:23Z"
+  generateName: csi-azuredisk-node-
+  labels:
+    app: csi-azuredisk-node
+    controller-revision-hash: f7f44fdd
+    pod-template-generation: "1"
+  name: csi-azuredisk-node-lddg2
+  namespace: kube-system
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: DaemonSet
+    name: csi-azuredisk-node
+    uid: 042366a7-730a-40e3-b615-88a4b2b905da
+  resourceVersion: "978"
+  uid: ec1a1d44-0173-4c19-91dc-1653c8094250
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchFields:
+          - key: metadata.name
+            operator: In
+            values:
+            - aks-agentpool-11515983-vmss000000
+  containers:
+  - args:
+    - --csi-address=/csi/csi.sock
+    - --probe-timeout=3s
+    - --health-port=29603
+    - --v=2
+    env:
+    - name: KUBERNETES_PORT_443_TCP_ADDR
+      value: acldys-7ea05377.hcp.westeurope.azmk8s.io
+    - name: KUBERNETES_PORT
+      value: tcp://acldys-7ea05377.hcp.westeurope.azmk8s.io:443
+    - name: KUBERNETES_PORT_443_TCP
+      value: tcp://acldys-7ea05377.hcp.westeurope.azmk8s.io:443
+    - name: KUBERNETES_SERVICE_HOST
+      value: acldys-7ea05377.hcp.westeurope.azmk8s.io
+    image: mcr.microsoft.com/oss/kubernetes-csi/livenessprobe:v2.6.0
+    imagePullPolicy: IfNotPresent
+    name: liveness-probe
+    resources:
+      limits:
+        memory: 100Mi
+      requests:
+        cpu: 10m
+        memory: 20Mi
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /csi
+      name: socket-dir
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-q7xxk
+      readOnly: true
+  - args:
+    - --csi-address=$(ADDRESS)
+    - --kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)
+    - --v=2
+    env:
+    - name: ADDRESS
+      value: /csi/csi.sock
+    - name: DRIVER_REG_SOCK_PATH
+      value: /var/lib/kubelet/plugins/disk.csi.azure.com/csi.sock
+    - name: KUBERNETES_PORT_443_TCP_ADDR
+      value: acldys-7ea05377.hcp.westeurope.azmk8s.io
+    - name: KUBERNETES_PORT
+      value: tcp://acldys-7ea05377.hcp.westeurope.azmk8s.io:443
+    - name: KUBERNETES_PORT_443_TCP
+      value: tcp://acldys-7ea05377.hcp.westeurope.azmk8s.io:443
+    - name: KUBERNETES_SERVICE_HOST
+      value: acldys-7ea05377.hcp.westeurope.azmk8s.io
+    image: mcr.microsoft.com/oss/kubernetes-csi/csi-node-driver-registrar:v2.5.0
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      exec:
+        command:
+        - /csi-node-driver-registrar
+        - --kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)
+        - --mode=kubelet-registration-probe
+      failureThreshold: 3
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 30
+    name: node-driver-registrar
+    resources:
+      limits:
+        memory: 100Mi
+      requests:
+        cpu: 10m
+        memory: 20Mi
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /csi
+      name: socket-dir
+    - mountPath: /registration
+      name: registration-dir
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-q7xxk
+      readOnly: true
+  - args:
+    - --v=5
+    - --endpoint=$(CSI_ENDPOINT)
+    - --nodeid=$(KUBE_NODE_NAME)
+    - --metrics-address=0.0.0.0:29605
+    - --enable-perf-optimization=true
+    env:
+    - name: AZURE_CREDENTIAL_FILE
+      value: /etc/kubernetes/azure.json
+    - name: CSI_ENDPOINT
+      value: unix:///csi/csi.sock
+    - name: KUBE_NODE_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: spec.nodeName
+    - name: KUBERNETES_PORT_443_TCP_ADDR
+      value: acldys-7ea05377.hcp.westeurope.azmk8s.io
+    - name: KUBERNETES_PORT
+      value: tcp://acldys-7ea05377.hcp.westeurope.azmk8s.io:443
+    - name: KUBERNETES_PORT_443_TCP
+      value: tcp://acldys-7ea05377.hcp.westeurope.azmk8s.io:443
+    - name: KUBERNETES_SERVICE_HOST
+      value: acldys-7ea05377.hcp.westeurope.azmk8s.io
+    image: mcr.microsoft.com/oss/kubernetes-csi/azuredisk-csi:v1.19.0
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      failureThreshold: 5
+      httpGet:
+        path: /healthz
+        port: healthz
+        scheme: HTTP
+      initialDelaySeconds: 30
+      periodSeconds: 30
+      successThreshold: 1
+      timeoutSeconds: 10
+    name: azuredisk
+    ports:
+    - containerPort: 29603
+      hostPort: 29603
+      name: healthz
+      protocol: TCP
+    resources:
+      limits:
+        memory: 200Mi
+      requests:
+        cpu: 10m
+        memory: 20Mi
+    securityContext:
+      privileged: true
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /csi
+      name: socket-dir
+    - mountPath: /var/lib/kubelet/
+      mountPropagation: Bidirectional
+      name: mountpoint-dir
+    - mountPath: /etc/kubernetes/
+      name: azure-cred
+    - mountPath: /dev
+      name: device-dir
+    - mountPath: /sys/bus/scsi/devices
+      name: sys-devices-dir
+    - mountPath: /sys/class/scsi_host/
+      name: scsi-host-dir
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-q7xxk
+      readOnly: true
+  dnsPolicy: Default
+  enableServiceLinks: true
+  hostNetwork: true
+  nodeName: aks-agentpool-11515983-vmss000000
+  preemptionPolicy: PreemptLowerPriority
+  priority: 2000001000
+  priorityClassName: system-node-critical
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: csi-azuredisk-node-sa
+  serviceAccountName: csi-azuredisk-node-sa
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - key: CriticalAddonsOnly
+    operator: Exists
+  - effect: NoExecute
+    operator: Exists
+  - effect: NoSchedule
+    operator: Exists
+  volumes:
+  - hostPath:
+      path: /var/lib/kubelet/plugins/disk.csi.azure.com
+      type: DirectoryOrCreate
+    name: socket-dir
+  - hostPath:
+      path: /var/lib/kubelet/
+      type: DirectoryOrCreate
+    name: mountpoint-dir
+  - hostPath:
+      path: /var/lib/kubelet/plugins_registry/
+      type: DirectoryOrCreate
+    name: registration-dir
+  - hostPath:
+      path: /etc/kubernetes/
+      type: DirectoryOrCreate
+    name: azure-cred
+  - hostPath:
+      path: /dev
+      type: Directory
+    name: device-dir
+  - hostPath:
+      path: /sys/bus/scsi/devices
+      type: Directory
+    name: sys-devices-dir
+  - hostPath:
+      path: /sys/class/scsi_host/
+      type: Directory
+    name: scsi-host-dir
+  - name: kube-api-access-q7xxk
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-01T18:16:24Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-01T18:16:35Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-01T18:16:35Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-01T18:16:23Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://ef50b11d807ecb8e10e4eb820a03c26e6e4a83765923494c93d31e83f06cc283
+    image: mcr.microsoft.com/oss/kubernetes-csi/azuredisk-csi:v1.19.0
+    imageID: mcr.microsoft.com/oss/kubernetes-csi/azuredisk-csi@sha256:c9bd6ae0636bbbb783dfd30d8d2cd26facaf03d6cdcbfd29401eefe094671db6
+    lastState: {}
+    name: azuredisk
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2022-07-01T18:16:34Z"
+  - containerID: containerd://5cdcf6d022741dcbc39dadbe149febfaff1fbd709d37aefc06ff615bff3106dd
+    image: mcr.microsoft.com/oss/kubernetes-csi/livenessprobe:v2.6.0
+    imageID: sha256:f97059c7b56f8e771da0f91e81e495d8f722125c1342148db5970be7b4c16570
+    lastState: {}
+    name: liveness-probe
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2022-07-01T18:16:27Z"
+  - containerID: containerd://d259290502e678a868b36af2c231056642f2fc9b9d3a02888ce2fd992416a4b6
+    image: mcr.microsoft.com/oss/kubernetes-csi/csi-node-driver-registrar:v2.5.0
+    imageID: sha256:9f080292bc0292635062a424791004c647437fd6cb107580beeb946673d399c8
+    lastState: {}
+    name: node-driver-registrar
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2022-07-01T18:16:27Z"
+  hostIP: 10.224.0.4
+  phase: Running
+  podIP: 10.224.0.4
+  podIPs:
+  - ip: 10.224.0.4
+  qosClass: Burstable
+  startTime: "2022-07-01T18:16:24Z"

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"ServiceAccount","metadata":{"annotations":{},"labels":{"addonmanager.kubernetes.io/mode":"Reconcile","kubernetes.io/bootstrapping":"rbac-defaults"},"name":"csi-azuredisk-node-sa","namespace":"kube-system"}}
+  creationTimestamp: "2022-07-01T18:15:42Z"
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+    kubernetes.io/bootstrapping: rbac-defaults
+  name: csi-azuredisk-node-sa
+  namespace: kube-system
+  resourceVersion: "501"
+  uid: 405b7b7f-30a7-4062-a397-ca8cf91ba87a
+secrets:
+- name: csi-azuredisk-node-sa-token-44h82

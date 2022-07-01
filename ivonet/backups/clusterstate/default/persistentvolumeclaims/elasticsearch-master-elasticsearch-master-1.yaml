@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  annotations:
+    pv.kubernetes.io/bind-completed: "yes"
+    pv.kubernetes.io/bound-by-controller: "yes"
+    volume.beta.kubernetes.io/storage-provisioner: disk.csi.azure.com
+    volume.kubernetes.io/selected-node: aks-agentpool-11515983-vmss000000
+  creationTimestamp: "2022-07-01T18:50:53Z"
+  finalizers:
+  - kubernetes.io/pvc-protection
+  labels:
+    app: elasticsearch-master
+  name: elasticsearch-master-elasticsearch-master-1
+  namespace: default
+  resourceVersion: "9227"
+  uid: e34d5589-9c3a-43ad-ae8c-864fd68431d2
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 30Gi
+  storageClassName: default
+  volumeMode: Filesystem
+  volumeName: pvc-e34d5589-9c3a-43ad-ae8c-864fd68431d2
+status:
+  accessModes:
+  - ReadWriteOnce
+  capacity:
+    storage: 30Gi
+  phase: Bound

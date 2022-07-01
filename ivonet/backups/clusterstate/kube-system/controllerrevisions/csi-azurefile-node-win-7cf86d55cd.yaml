@@ -1,0 +1,217 @@
+apiVersion: apps/v1
+data:
+  spec:
+    template:
+      $patch: replace
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: csi-azurefile-node-win
+      spec:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.azure.com/cluster
+                  operator: Exists
+                - key: type
+                  operator: NotIn
+                  values:
+                  - virtual-kubelet
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                  - windows
+        containers:
+        - args:
+          - --csi-address=$(CSI_ENDPOINT)
+          - --probe-timeout=3s
+          - --health-port=29613
+          - --v=2
+          env:
+          - name: CSI_ENDPOINT
+            value: unix://C:\\csi\\csi.sock
+          image: mcr.microsoft.com/oss/kubernetes-csi/livenessprobe:v2.6.0
+          imagePullPolicy: IfNotPresent
+          name: liveness-probe
+          resources:
+            limits:
+              memory: 200Mi
+            requests:
+              cpu: 10m
+              memory: 20Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: C:\csi
+            name: plugin-dir
+        - args:
+          - --csi-address=$(CSI_ENDPOINT)
+          - --kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)
+          - --v=2
+          env:
+          - name: CSI_ENDPOINT
+            value: unix://C:\\csi\\csi.sock
+          - name: DRIVER_REG_SOCK_PATH
+            value: C:\\var\\lib\\kubelet\\plugins\\file.csi.azure.com\\csi.sock
+          - name: KUBE_NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          image: mcr.microsoft.com/oss/kubernetes-csi/csi-node-driver-registrar:v2.5.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            exec:
+              command:
+              - /csi-node-driver-registrar.exe
+              - --kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)
+              - --mode=kubelet-registration-probe
+            failureThreshold: 3
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 30
+          name: node-driver-registrar
+          resources:
+            limits:
+              memory: 200Mi
+            requests:
+              cpu: 10m
+              memory: 20Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: C:\var\lib\kubelet
+            name: kubelet-dir
+          - mountPath: C:\csi
+            name: plugin-dir
+          - mountPath: C:\registration
+            name: registration-dir
+        - args:
+          - --v=5
+          - --endpoint=$(CSI_ENDPOINT)
+          - --nodeid=$(KUBE_NODE_NAME)
+          - --metrics-address=0.0.0.0:29615
+          - --kubeconfig=C:\k\config
+          env:
+          - name: AZURE_CREDENTIAL_FILE
+            value: C:\k\azure.json
+          - name: CSI_ENDPOINT
+            value: unix://C:\\csi\\csi.sock
+          - name: KUBE_NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          image: mcr.microsoft.com/oss/kubernetes-csi/azurefile-csi:v1.19.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /healthz
+              port: healthz
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 10
+          name: azurefile
+          ports:
+          - containerPort: 29613
+            name: healthz
+            protocol: TCP
+          resources:
+            limits:
+              memory: 400Mi
+            requests:
+              cpu: 10m
+              memory: 20Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: C:\var\lib\kubelet
+            name: kubelet-dir
+          - mountPath: C:\csi
+            name: plugin-dir
+          - mountPath: C:\k
+            name: azure-config
+          - mountPath: \\.\pipe\csi-proxy-filesystem-v1
+            name: csi-proxy-fs-pipe-v1
+          - mountPath: \\.\pipe\csi-proxy-smb-v1
+            name: csi-proxy-smb-pipe-v1
+          - mountPath: \\.\pipe\csi-proxy-filesystem-v1beta1
+            name: csi-proxy-fs-pipe-v1beta1
+          - mountPath: \\.\pipe\csi-proxy-smb-v1beta1
+            name: csi-proxy-smb-pipe-v1beta1
+        dnsPolicy: ClusterFirst
+        priorityClassName: system-node-critical
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: csi-azurefile-node-sa
+        serviceAccountName: csi-azurefile-node-sa
+        terminationGracePeriodSeconds: 30
+        tolerations:
+        - key: CriticalAddonsOnly
+          operator: Exists
+        - effect: NoExecute
+          operator: Exists
+        - effect: NoSchedule
+          operator: Exists
+        volumes:
+        - hostPath:
+            path: \\.\pipe\csi-proxy-filesystem-v1
+            type: ""
+          name: csi-proxy-fs-pipe-v1
+        - hostPath:
+            path: \\.\pipe\csi-proxy-smb-v1
+            type: ""
+          name: csi-proxy-smb-pipe-v1
+        - hostPath:
+            path: \\.\pipe\csi-proxy-filesystem-v1beta1
+            type: ""
+          name: csi-proxy-fs-pipe-v1beta1
+        - hostPath:
+            path: \\.\pipe\csi-proxy-smb-v1beta1
+            type: ""
+          name: csi-proxy-smb-pipe-v1beta1
+        - hostPath:
+            path: C:\var\lib\kubelet\plugins_registry\
+            type: Directory
+          name: registration-dir
+        - hostPath:
+            path: C:\var\lib\kubelet\
+            type: Directory
+          name: kubelet-dir
+        - hostPath:
+            path: C:\var\lib\kubelet\plugins\file.csi.azure.com\
+            type: DirectoryOrCreate
+          name: plugin-dir
+        - hostPath:
+            path: C:\k
+            type: DirectoryOrCreate
+          name: azure-config
+kind: ControllerRevision
+metadata:
+  annotations:
+    deprecated.daemonset.template.generation: "1"
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"apps/v1","kind":"DaemonSet","metadata":{"annotations":{},"labels":{"addonmanager.kubernetes.io/mode":"Reconcile","kubernetes.io/cluster-service":"true"},"name":"csi-azurefile-node-win","namespace":"kube-system"},"spec":{"selector":{"matchLabels":{"app":"csi-azurefile-node-win"}},"template":{"metadata":{"labels":{"app":"csi-azurefile-node-win"}},"spec":{"affinity":{"nodeAffinity":{"requiredDuringSchedulingIgnoredDuringExecution":{"nodeSelectorTerms":[{"matchExpressions":[{"key":"kubernetes.azure.com/cluster","operator":"Exists"},{"key":"type","operator":"NotIn","values":["virtual-kubelet"]},{"key":"kubernetes.io/os","operator":"In","values":["windows"]}]}]}}},"containers":[{"args":["--csi-address=$(CSI_ENDPOINT)","--probe-timeout=3s","--health-port=29613","--v=2"],"env":[{"name":"CSI_ENDPOINT","value":"unix://C:\\\\csi\\\\csi.sock"}],"image":"mcr.microsoft.com/oss/kubernetes-csi/livenessprobe:v2.6.0","imagePullPolicy":"IfNotPresent","name":"liveness-probe","resources":{"limits":{"memory":"200Mi"},"requests":{"cpu":"10m","memory":"20Mi"}},"volumeMounts":[{"mountPath":"C:\\csi","name":"plugin-dir"}]},{"args":["--csi-address=$(CSI_ENDPOINT)","--kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)","--v=2"],"env":[{"name":"CSI_ENDPOINT","value":"unix://C:\\\\csi\\\\csi.sock"},{"name":"DRIVER_REG_SOCK_PATH","value":"C:\\\\var\\\\lib\\\\kubelet\\\\plugins\\\\file.csi.azure.com\\\\csi.sock"},{"name":"KUBE_NODE_NAME","valueFrom":{"fieldRef":{"fieldPath":"spec.nodeName"}}}],"image":"mcr.microsoft.com/oss/kubernetes-csi/csi-node-driver-registrar:v2.5.0","imagePullPolicy":"IfNotPresent","livenessProbe":{"exec":{"command":["/csi-node-driver-registrar.exe","--kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)","--mode=kubelet-registration-probe"]},"initialDelaySeconds":60,"timeoutSeconds":30},"name":"node-driver-registrar","resources":{"limits":{"memory":"200Mi"},"requests":{"cpu":"10m","memory":"20Mi"}},"volumeMounts":[{"mountPath":"C:\\var\\lib\\kubelet","name":"kubelet-dir"},{"mountPath":"C:\\csi","name":"plugin-dir"},{"mountPath":"C:\\registration","name":"registration-dir"}]},{"args":["--v=5","--endpoint=$(CSI_ENDPOINT)","--nodeid=$(KUBE_NODE_NAME)","--metrics-address=0.0.0.0:29615","--kubeconfig=C:\\k\\config"],"env":[{"name":"AZURE_CREDENTIAL_FILE","value":"C:\\k\\azure.json"},{"name":"CSI_ENDPOINT","value":"unix://C:\\\\csi\\\\csi.sock"},{"name":"KUBE_NODE_NAME","valueFrom":{"fieldRef":{"apiVersion":"v1","fieldPath":"spec.nodeName"}}}],"image":"mcr.microsoft.com/oss/kubernetes-csi/azurefile-csi:v1.19.0","imagePullPolicy":"IfNotPresent","livenessProbe":{"failureThreshold":5,"httpGet":{"path":"/healthz","port":"healthz"},"initialDelaySeconds":30,"periodSeconds":30,"timeoutSeconds":10},"name":"azurefile","ports":[{"containerPort":29613,"name":"healthz","protocol":"TCP"}],"resources":{"limits":{"memory":"400Mi"},"requests":{"cpu":"10m","memory":"20Mi"}},"volumeMounts":[{"mountPath":"C:\\var\\lib\\kubelet","name":"kubelet-dir"},{"mountPath":"C:\\csi","name":"plugin-dir"},{"mountPath":"C:\\k","name":"azure-config"},{"mountPath":"\\\\.\\pipe\\csi-proxy-filesystem-v1","name":"csi-proxy-fs-pipe-v1"},{"mountPath":"\\\\.\\pipe\\csi-proxy-smb-v1","name":"csi-proxy-smb-pipe-v1"},{"mountPath":"\\\\.\\pipe\\csi-proxy-filesystem-v1beta1","name":"csi-proxy-fs-pipe-v1beta1"},{"mountPath":"\\\\.\\pipe\\csi-proxy-smb-v1beta1","name":"csi-proxy-smb-pipe-v1beta1"}]}],"priorityClassName":"system-node-critical","serviceAccountName":"csi-azurefile-node-sa","tolerations":[{"key":"CriticalAddonsOnly","operator":"Exists"},{"effect":"NoExecute","operator":"Exists"},{"effect":"NoSchedule","operator":"Exists"}],"volumes":[{"hostPath":{"path":"\\\\.\\pipe\\csi-proxy-filesystem-v1"},"name":"csi-proxy-fs-pipe-v1"},{"hostPath":{"path":"\\\\.\\pipe\\csi-proxy-smb-v1"},"name":"csi-proxy-smb-pipe-v1"},{"hostPath":{"path":"\\\\.\\pipe\\csi-proxy-filesystem-v1beta1"},"name":"csi-proxy-fs-pipe-v1beta1"},{"hostPath":{"path":"\\\\.\\pipe\\csi-proxy-smb-v1beta1"},"name":"csi-proxy-smb-pipe-v1beta1"},{"hostPath":{"path":"C:\\var\\lib\\kubelet\\plugins_registry\\","type":"Directory"},"name":"registration-dir"},{"hostPath":{"path":"C:\\var\\lib\\kubelet\\","type":"Directory"},"name":"kubelet-dir"},{"hostPath":{"path":"C:\\var\\lib\\kubelet\\plugins\\file.csi.azure.com\\","type":"DirectoryOrCreate"},"name":"plugin-dir"},{"hostPath":{"path":"C:\\k","type":"DirectoryOrCreate"},"name":"azure-config"}]}}}}
+  creationTimestamp: "2022-07-01T18:15:42Z"
+  labels:
+    app: csi-azurefile-node-win
+    controller-revision-hash: 7cf86d55cd
+  name: csi-azurefile-node-win-7cf86d55cd
+  namespace: kube-system
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: DaemonSet
+    name: csi-azurefile-node-win
+    uid: 4eca8258-1fcf-452a-a386-51632e7137a4
+  resourceVersion: "519"
+  uid: 0a818fed-e046-4ba9-8a60-31313e857660
+revision: 1

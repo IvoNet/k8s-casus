@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: "2022-07-01T18:15:28Z"
+  name: default
+  namespace: kube-public
+  resourceVersion: "360"
+  uid: 67f75244-9aa6-4481-8798-c96ea705d03a
+secrets:
+- name: default-token-9tmwp

@@ -1,0 +1,164 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: "2022-07-01T18:16:59Z"
+  generateName: azure-ip-masq-agent-
+  labels:
+    controller-revision-hash: 84bb444c4
+    k8s-app: azure-ip-masq-agent
+    pod-template-generation: "1"
+    tier: node
+  name: azure-ip-masq-agent-6g92d
+  namespace: kube-system
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: DaemonSet
+    name: azure-ip-masq-agent
+    uid: 9da51cae-0400-40f7-aa18-e5724d5e8c56
+  resourceVersion: "1164"
+  uid: d21a9ba0-96a8-4c28-aaae-9eb45cd723b9
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchFields:
+          - key: metadata.name
+            operator: In
+            values:
+            - aks-agentpool-11515983-vmss000002
+  containers:
+  - args:
+    - --v=2
+    - --resync-interval=60
+    env:
+    - name: KUBERNETES_PORT_443_TCP_ADDR
+      value: acldys-7ea05377.hcp.westeurope.azmk8s.io
+    - name: KUBERNETES_PORT
+      value: tcp://acldys-7ea05377.hcp.westeurope.azmk8s.io:443
+    - name: KUBERNETES_PORT_443_TCP
+      value: tcp://acldys-7ea05377.hcp.westeurope.azmk8s.io:443
+    - name: KUBERNETES_SERVICE_HOST
+      value: acldys-7ea05377.hcp.westeurope.azmk8s.io
+    image: mcr.microsoft.com/aks/ip-masq-agent-v2:v0.1.3
+    imagePullPolicy: IfNotPresent
+    name: azure-ip-masq-agent
+    resources:
+      limits:
+        cpu: 500m
+        memory: 250Mi
+      requests:
+        cpu: 100m
+        memory: 50Mi
+    securityContext:
+      privileged: true
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /etc/config
+      name: azure-ip-masq-agent-config-volume
+    - mountPath: /run/xtables.lock
+      name: iptableslock
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-55ml9
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  hostNetwork: true
+  nodeName: aks-agentpool-11515983-vmss000002
+  preemptionPolicy: PreemptLowerPriority
+  priority: 2000001000
+  priorityClassName: system-node-critical
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - key: CriticalAddonsOnly
+    operator: Exists
+  - effect: NoExecute
+    operator: Exists
+  - effect: NoSchedule
+    operator: Exists
+  volumes:
+  - name: azure-ip-masq-agent-config-volume
+    projected:
+      defaultMode: 420
+      sources:
+      - configMap:
+          items:
+          - key: ip-masq-agent
+            mode: 444
+            path: ip-masq-agent
+          name: azure-ip-masq-agent-config
+          optional: true
+      - configMap:
+          items:
+          - key: ip-masq-agent-reconciled
+            mode: 444
+            path: ip-masq-agent-reconciled
+          name: azure-ip-masq-agent-config-reconciled
+          optional: true
+  - hostPath:
+      path: /run/xtables.lock
+      type: FileOrCreate
+    name: iptableslock
+  - name: kube-api-access-55ml9
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-01T18:17:00Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-01T18:17:02Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-01T18:17:02Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-01T18:16:59Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://72f9e9c52a08d2d8249b86909201e544be1ee0876e9e8c1981d9f5881ba0cc83
+    image: mcr.microsoft.com/aks/ip-masq-agent-v2:v0.1.3
+    imageID: sha256:6c3dd649baa57279888709fe61100969ebd302a5e9f41e8678046fa0a0266c3e
+    lastState: {}
+    name: azure-ip-masq-agent
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2022-07-01T18:17:02Z"
+  hostIP: 10.224.0.6
+  phase: Running
+  podIP: 10.224.0.6
+  podIPs:
+  - ip: 10.224.0.6
+  qosClass: Burstable
+  startTime: "2022-07-01T18:17:00Z"

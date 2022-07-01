@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"ServiceAccount","metadata":{"annotations":{},"labels":{"addonmanager.kubernetes.io/mode":"Reconcile"},"name":"kube-proxy","namespace":"kube-system"}}
+  creationTimestamp: "2022-07-01T18:15:43Z"
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+  name: kube-proxy
+  namespace: kube-system
+  resourceVersion: "587"
+  uid: a9b684bc-c515-468c-9501-ae4249574229
+secrets:
+- name: kube-proxy-token-btw4k

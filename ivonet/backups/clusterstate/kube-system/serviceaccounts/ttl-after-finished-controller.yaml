@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: "2022-07-01T18:15:24Z"
+  name: ttl-after-finished-controller
+  namespace: kube-system
+  resourceVersion: "228"
+  uid: c6b77f0b-8092-4ff5-b753-dc2a2b3b2a95
+secrets:
+- name: ttl-after-finished-controller-token-29cdd

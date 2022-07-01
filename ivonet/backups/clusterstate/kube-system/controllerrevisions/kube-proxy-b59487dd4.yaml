@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+data:
+  spec:
+    template:
+      $patch: replace
+      metadata:
+        creationTimestamp: null
+        labels:
+          component: kube-proxy
+          tier: node
+      spec:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.azure.com/cluster
+                  operator: Exists
+                - key: type
+                  operator: NotIn
+                  values:
+                  - virtual-kubelet
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                  - linux
+        containers:
+        - command:
+          - kube-proxy
+          - --metrics-bind-address=0.0.0.0:10249
+          - --kubeconfig=/var/lib/kubelet/kubeconfig
+          - --cluster-cidr=10.244.0.0/16
+          - --v=3
+          image: mcr.microsoft.com/oss/kubernetes/kube-proxy:v1.22.6-hotfix.20220330.4
+          imagePullPolicy: IfNotPresent
+          name: kube-proxy
+          resources:
+            requests:
+              cpu: 100m
+          securityContext:
+            privileged: true
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /var/lib/kubelet
+            name: kubeconfig
+            readOnly: true
+          - mountPath: /etc/kubernetes/certs
+            name: certificates
+            readOnly: true
+          - mountPath: /run/xtables.lock
+            name: iptableslock
+        dnsPolicy: ClusterFirst
+        hostNetwork: true
+        priorityClassName: system-node-critical
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: kube-proxy
+        serviceAccountName: kube-proxy
+        terminationGracePeriodSeconds: 30
+        tolerations:
+        - key: CriticalAddonsOnly
+          operator: Exists
+        - effect: NoExecute
+          operator: Exists
+        - effect: NoSchedule
+          operator: Exists
+        volumes:
+        - hostPath:
+            path: /var/lib/kubelet
+            type: ""
+          name: kubeconfig
+        - hostPath:
+            path: /etc/kubernetes/certs
+            type: ""
+          name: certificates
+        - hostPath:
+            path: /run/xtables.lock
+            type: FileOrCreate
+          name: iptableslock
+kind: ControllerRevision
+metadata:
+  annotations:
+    deprecated.daemonset.template.generation: "1"
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"apps/v1","kind":"DaemonSet","metadata":{"annotations":{},"labels":{"addonmanager.kubernetes.io/mode":"Reconcile","component":"kube-proxy","tier":"node"},"name":"kube-proxy","namespace":"kube-system"},"spec":{"selector":{"matchLabels":{"component":"kube-proxy","tier":"node"}},"template":{"metadata":{"annotations":null,"labels":{"component":"kube-proxy","tier":"node"}},"spec":{"affinity":{"nodeAffinity":{"requiredDuringSchedulingIgnoredDuringExecution":{"nodeSelectorTerms":[{"labelSelector":null,"matchExpressions":[{"key":"kubernetes.azure.com/cluster","operator":"Exists"},{"key":"type","operator":"NotIn","values":["virtual-kubelet"]},{"key":"kubernetes.io/os","operator":"In","values":["linux"]}]}]}}},"containers":[{"command":["kube-proxy","--metrics-bind-address=0.0.0.0:10249","--kubeconfig=/var/lib/kubelet/kubeconfig","--cluster-cidr=10.244.0.0/16","--v=3"],"image":"mcr.microsoft.com/oss/kubernetes/kube-proxy:v1.22.6-hotfix.20220330.4","name":"kube-proxy","resources":{"requests":{"cpu":"100m"}},"securityContext":{"privileged":true},"volumeMounts":[{"mountPath":"/var/lib/kubelet","name":"kubeconfig","readOnly":true},{"mountPath":"/etc/kubernetes/certs","name":"certificates","readOnly":true},{"mountPath":"/run/xtables.lock","name":"iptableslock"}]}],"hostNetwork":true,"priorityClassName":"system-node-critical","serviceAccountName":"kube-proxy","tolerations":[{"key":"CriticalAddonsOnly","operator":"Exists"},{"effect":"NoExecute","operator":"Exists"},{"effect":"NoSchedule","operator":"Exists"}],"volumes":[{"hostPath":{"path":"/var/lib/kubelet"},"name":"kubeconfig"},{"hostPath":{"path":"/etc/kubernetes/certs"},"name":"certificates"},{"hostPath":{"path":"/run/xtables.lock","type":"FileOrCreate"},"name":"iptableslock"}]}},"updateStrategy":{"rollingUpdate":{"maxUnavailable":1},"type":"RollingUpdate"}}}
+  creationTimestamp: "2022-07-01T18:15:43Z"
+  labels:
+    component: kube-proxy
+    controller-revision-hash: b59487dd4
+    tier: node
+  name: kube-proxy-b59487dd4
+  namespace: kube-system
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: DaemonSet
+    name: kube-proxy
+    uid: ff05f694-519e-4c43-b0f9-8ad7768febed
+  resourceVersion: "583"
+  uid: 29cd7da5-265b-47b3-8282-807f2605be56
+revision: 1

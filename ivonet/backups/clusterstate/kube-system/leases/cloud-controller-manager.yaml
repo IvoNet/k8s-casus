@@ -1,0 +1,14 @@
+apiVersion: coordination.k8s.io/v1
+kind: Lease
+metadata:
+  creationTimestamp: "2022-07-01T18:15:28Z"
+  name: cloud-controller-manager
+  namespace: kube-system
+  resourceVersion: "44091"
+  uid: 5ebadbbb-c5b7-488a-a9d7-b8aea00d9110
+spec:
+  acquireTime: "2022-07-01T18:15:28.205869Z"
+  holderIdentity: cloud-controller-manager-6c4f75c9f7-mqlgc_75ab23d6-e56b-4286-b36d-dd7cd47d9bc4
+  leaseDurationSeconds: 15
+  leaseTransitions: 0
+  renewTime: "2022-07-01T21:22:23.602709Z"

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"ServiceAccount","metadata":{"annotations":{},"labels":{"addonmanager.kubernetes.io/mode":"Reconcile","k8s-app":"cloud-node-manager","kubernetes.io/cluster-service":"true"},"name":"cloud-node-manager","namespace":"kube-system"}}
+  creationTimestamp: "2022-07-01T18:15:41Z"
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+    k8s-app: cloud-node-manager
+    kubernetes.io/cluster-service: "true"
+  name: cloud-node-manager
+  namespace: kube-system
+  resourceVersion: "445"
+  uid: 81133344-0fae-4ede-86dd-363930597c28
+secrets:
+- name: cloud-node-manager-token-sw9hs

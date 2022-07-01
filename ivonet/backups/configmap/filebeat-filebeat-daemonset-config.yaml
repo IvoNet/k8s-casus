@@ -1,0 +1,33 @@
+apiVersion: v1
+data:
+  filebeat.yml: |
+    filebeat.inputs:
+    - type: container
+      paths:
+        - /var/log/containers/*.log
+      processors:
+      - add_kubernetes_metadata:
+          host: ${NODE_NAME}
+          matchers:
+          - logs_path:
+              logs_path: "/var/log/containers/"
+
+    output.elasticsearch:
+      host: '${NODE_NAME}'
+      hosts: '${ELASTICSEARCH_HOSTS:elasticsearch-master:9200}'
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: filebeat
+    meta.helm.sh/release-namespace: default
+  creationTimestamp: "2022-07-01T19:34:13Z"
+  labels:
+    app: filebeat-filebeat
+    app.kubernetes.io/managed-by: Helm
+    chart: filebeat-7.17.3
+    heritage: Helm
+    release: filebeat
+  name: filebeat-filebeat-daemonset-config
+  namespace: default
+  resourceVersion: "19329"
+  uid: 6f1c746d-6343-476a-aa59-8d5557b84e08

@@ -1,0 +1,150 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  annotations:
+    deployment.kubernetes.io/desired-replicas: "2"
+    deployment.kubernetes.io/max-replicas: "2"
+    deployment.kubernetes.io/revision: "2"
+  creationTimestamp: "2022-07-01T18:19:09Z"
+  generation: 3
+  labels:
+    app: konnectivity-agent
+    component: tunnel
+    pod-template-hash: 75d5d88f86
+  name: konnectivity-agent-75d5d88f86
+  namespace: kube-system
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: Deployment
+    name: konnectivity-agent
+    uid: 4d912ec1-1252-4259-ab41-104ebf34bc2f
+  resourceVersion: "1920"
+  uid: f73adcca-adc9-41d3-b702-9d6e6af23803
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: konnectivity-agent
+      pod-template-hash: 75d5d88f86
+  template:
+    metadata:
+      annotations:
+        checksum/client-cert: db82c016b2a90fddf1920ed4c2abf8ce40afe03089ce8a96256e2f6533f2e112
+        checksum/service-account-key: d05f8397f62550e97ea6a6ea64f04369d78f25e8d83a1cff46f65ea7848e0093
+      creationTimestamp: null
+      labels:
+        app: konnectivity-agent
+        component: tunnel
+        pod-template-hash: 75d5d88f86
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - preference:
+              matchExpressions:
+              - key: kubernetes.azure.com/mode
+                operator: In
+                values:
+                - system
+            weight: 100
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - konnectivity-agent
+              topologyKey: failure-domain.beta.kubernetes.io/zone
+            weight: 10
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - konnectivity-agent
+              topologyKey: kubernetes.io/hostname
+            weight: 5
+      automountServiceAccountToken: false
+      containers:
+      - args:
+        - --proxy-server-host=acldys-7ea05377.hcp.westeurope.azmk8s.io
+        - --proxy-server-port=443
+        - --health-server-port=8082
+        - --agent-key=/certs/client.key
+        - --agent-cert=/certs/client.crt
+        - --ca-cert=/certs/ca.crt
+        - --alpn-proto=konnectivity
+        - -v=2
+        command:
+        - /proxy-agent
+        image: mcr.microsoft.com/oss/kubernetes/apiserver-network-proxy/agent:v0.0.30
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /ready
+            port: 8082
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 60
+          successThreshold: 1
+          timeoutSeconds: 60
+        name: konnectivity-agent
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /ready
+            port: 8082
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 20m
+            memory: 20Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /certs
+          name: certs
+      dnsPolicy: Default
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+      priorityClassName: system-node-critical
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: konnectivity-agent
+      serviceAccountName: konnectivity-agent
+      terminationGracePeriodSeconds: 30
+      tolerations:
+      - key: CriticalAddonsOnly
+        operator: Exists
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: 30
+      - effect: NoExecute
+        key: node.kubernetes.io/not-ready
+        operator: Exists
+        tolerationSeconds: 30
+      volumes:
+      - name: certs
+        secret:
+          defaultMode: 420
+          secretName: konnectivity-certs
+status:
+  availableReplicas: 2
+  fullyLabeledReplicas: 2
+  observedGeneration: 3
+  readyReplicas: 2
+  replicas: 2

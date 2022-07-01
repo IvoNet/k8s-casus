@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: "2022-07-01T18:15:27Z"
+  name: root-ca-cert-publisher
+  namespace: kube-system
+  resourceVersion: "314"
+  uid: 0ea792a1-3463-41b8-baf0-11d999104bfe
+secrets:
+- name: root-ca-cert-publisher-token-h8cbd

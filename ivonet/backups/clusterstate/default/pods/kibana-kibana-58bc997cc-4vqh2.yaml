@@ -1,0 +1,168 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: "2022-07-01T19:18:47Z"
+  generateName: kibana-kibana-58bc997cc-
+  labels:
+    app: kibana
+    pod-template-hash: 58bc997cc
+    release: kibana
+  name: kibana-kibana-58bc997cc-4vqh2
+  namespace: default
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: ReplicaSet
+    name: kibana-kibana-58bc997cc
+    uid: beed81b4-d85d-40ac-9855-ec9808153dbb
+  resourceVersion: "16072"
+  uid: 5e33e0b0-e448-43d2-9b29-6611b433e35d
+spec:
+  automountServiceAccountToken: true
+  containers:
+  - env:
+    - name: ELASTICSEARCH_HOSTS
+      value: http://elasticsearch-master:9200
+    - name: SERVER_HOST
+      value: 0.0.0.0
+    - name: NODE_OPTIONS
+      value: --max-old-space-size=1800
+    image: docker.elastic.co/kibana/kibana:7.17.3
+    imagePullPolicy: IfNotPresent
+    name: kibana
+    ports:
+    - containerPort: 5601
+      protocol: TCP
+    readinessProbe:
+      exec:
+        command:
+        - bash
+        - -c
+        - |
+          #!/usr/bin/env bash -e
+
+          # Disable nss cache to avoid filling dentry cache when calling curl
+          # This is required with Kibana Docker using nss < 3.52
+          export NSS_SDB_USE_CACHE=no
+
+          http () {
+              local path="${1}"
+              set -- -XGET -s --fail -L
+
+              if [ -n "${ELASTICSEARCH_USERNAME}" ] && [ -n "${ELASTICSEARCH_PASSWORD}" ]; then
+                set -- "$@" -u "${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD}"
+              fi
+
+              STATUS=$(curl --output /dev/null --write-out "%{http_code}" -k "$@" "http://localhost:5601${path}")
+              if [[ "${STATUS}" -eq 200 ]]; then
+                exit 0
+              fi
+
+              echo "Error: Got HTTP code ${STATUS} but expected a 200"
+              exit 1
+          }
+
+          http "/app/kibana"
+      failureThreshold: 3
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      successThreshold: 3
+      timeoutSeconds: 5
+    resources:
+      limits:
+        cpu: "1"
+      requests:
+        cpu: 100m
+    securityContext:
+      capabilities:
+        drop:
+        - ALL
+      runAsNonRoot: true
+      runAsUser: 1000
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-vdphn
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: aks-agentpool-11515983-vmss000002
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext:
+    fsGroup: 1000
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoSchedule
+    key: node.kubernetes.io/memory-pressure
+    operator: Exists
+  volumes:
+  - name: kube-api-access-vdphn
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-01T19:18:47Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-01T19:20:07Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-01T19:20:07Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-01T19:18:47Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://0276c3ce08c263565d9df7e4e3e9842c6fa7bb03817be1cc1c1a3b24a9ee81c2
+    image: docker.elastic.co/kibana/kibana:7.17.3
+    imageID: docker.elastic.co/kibana/kibana@sha256:9dd46102f9eadf43f62216a3113ed8b9ad675fe36706ff9daea8652f05d1a61e
+    lastState: {}
+    name: kibana
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2022-07-01T19:19:17Z"
+  hostIP: 10.224.0.6
+  phase: Running
+  podIP: 10.244.2.6
+  podIPs:
+  - ip: 10.244.2.6
+  qosClass: Burstable
+  startTime: "2022-07-01T19:18:47Z"

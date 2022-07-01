@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: "2022-07-01T18:15:24Z"
+  name: job-controller
+  namespace: kube-system
+  resourceVersion: "246"
+  uid: 594d05c6-679f-4a13-b688-399fde1a2550
+secrets:
+- name: job-controller-token-zdp5f

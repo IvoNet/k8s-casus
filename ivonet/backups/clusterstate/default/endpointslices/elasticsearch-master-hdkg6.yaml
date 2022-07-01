@@ -1,0 +1,78 @@
+addressType: IPv4
+apiVersion: discovery.k8s.io/v1
+endpoints:
+- addresses:
+  - 10.244.0.6
+  conditions:
+    ready: true
+    serving: true
+    terminating: false
+  nodeName: aks-agentpool-11515983-vmss000000
+  targetRef:
+    kind: Pod
+    name: elasticsearch-master-1
+    namespace: default
+    resourceVersion: "9807"
+    uid: 7169f9e9-1dd7-4b5f-97a3-58253a39b245
+  zone: "0"
+- addresses:
+  - 10.244.1.5
+  conditions:
+    ready: true
+    serving: true
+    terminating: false
+  nodeName: aks-agentpool-11515983-vmss000001
+  targetRef:
+    kind: Pod
+    name: elasticsearch-master-2
+    namespace: default
+    resourceVersion: "9808"
+    uid: 25e84fbc-21b0-48bc-ad8a-593ec40e5854
+  zone: "0"
+- addresses:
+  - 10.244.2.3
+  conditions:
+    ready: true
+    serving: true
+    terminating: false
+  nodeName: aks-agentpool-11515983-vmss000002
+  targetRef:
+    kind: Pod
+    name: elasticsearch-master-0
+    namespace: default
+    resourceVersion: "9806"
+    uid: 0307fb77-98e2-4b77-b0da-114752b9c225
+  zone: "0"
+kind: EndpointSlice
+metadata:
+  annotations:
+    endpoints.kubernetes.io/last-change-trigger-time: "2022-07-01T18:53:06Z"
+  creationTimestamp: "2022-07-01T18:50:53Z"
+  generateName: elasticsearch-master-
+  generation: 6
+  labels:
+    app: elasticsearch-master
+    app.kubernetes.io/managed-by: Helm
+    chart: elasticsearch
+    endpointslice.kubernetes.io/managed-by: endpointslice-controller.k8s.io
+    heritage: Helm
+    kubernetes.io/service-name: elasticsearch-master
+    release: elasticsearch
+  name: elasticsearch-master-hdkg6
+  namespace: default
+  ownerReferences:
+  - apiVersion: v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: Service
+    name: elasticsearch-master
+    uid: 310906ac-028e-46e5-9656-a3a9ea14d7aa
+  resourceVersion: "9816"
+  uid: b587fde4-943d-4b09-8f80-437d5c01e29a
+ports:
+- name: http
+  port: 9200
+  protocol: TCP
+- name: transport
+  port: 9300
+  protocol: TCP

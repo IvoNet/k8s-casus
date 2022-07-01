@@ -1,0 +1,14 @@
+apiVersion: coordination.k8s.io/v1
+kind: Lease
+metadata:
+  creationTimestamp: "2022-07-01T18:15:27Z"
+  name: external-snapshotter-leader-disk-csi-azure-com
+  namespace: kube-system
+  resourceVersion: "44079"
+  uid: 2146d79f-6e22-4a0f-99b9-4ac897c32d7c
+spec:
+  acquireTime: "2022-07-01T18:15:27.508076Z"
+  holderIdentity: csi-azuredisk-controller-5d5998b4-rbm8n
+  leaseDurationSeconds: 15
+  leaseTransitions: 0
+  renewTime: "2022-07-01T21:22:20.280172Z"

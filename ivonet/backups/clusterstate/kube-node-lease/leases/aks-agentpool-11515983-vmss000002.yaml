@@ -1,0 +1,17 @@
+apiVersion: coordination.k8s.io/v1
+kind: Lease
+metadata:
+  creationTimestamp: "2022-07-01T18:17:09Z"
+  name: aks-agentpool-11515983-vmss000002
+  namespace: kube-node-lease
+  ownerReferences:
+  - apiVersion: v1
+    kind: Node
+    name: aks-agentpool-11515983-vmss000002
+    uid: afa5c03b-3a0e-4edf-8bf9-3274618dfe75
+  resourceVersion: "44074"
+  uid: 233e7bce-bccf-4d02-94f2-bb21942613f1
+spec:
+  holderIdentity: aks-agentpool-11515983-vmss000002
+  leaseDurationSeconds: 40
+  renewTime: "2022-07-01T21:22:19.531207Z"

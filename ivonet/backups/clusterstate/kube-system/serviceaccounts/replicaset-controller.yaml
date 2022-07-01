@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: "2022-07-01T18:15:27Z"
+  name: replicaset-controller
+  namespace: kube-system
+  resourceVersion: "327"
+  uid: fa480f63-4563-4c52-bcb2-ed19f572c3e0
+secrets:
+- name: replicaset-controller-token-qhm9p

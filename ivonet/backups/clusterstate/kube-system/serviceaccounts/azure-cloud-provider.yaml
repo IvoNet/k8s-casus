@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: "2022-07-01T18:15:24Z"
+  name: azure-cloud-provider
+  namespace: kube-system
+  resourceVersion: "225"
+  uid: d1c45029-5334-4619-aa37-632f916e71fb
+secrets:
+- name: azure-cloud-provider-token-mzp67
