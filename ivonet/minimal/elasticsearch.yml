@@ -1,0 +1,144 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: elasticsearch-headless
+  namespace: efk
+  labels:
+    app: elasticsearch
+spec:
+  ports:
+    - port: 9200
+      name: http
+    - port: 9300
+      name: inter-node
+  clusterIP: None # Headless service
+  publishNotReadyAddresses: true
+  selector:
+    app: elasticsearch
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: elasticsearch
+  namespace: efk
+  labels:
+    app: elasticsearch
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9200
+      name: http
+      protocol: TCP
+    - port: 9300
+      name: inter-node
+      protocol: TCP
+  publishNotReadyAddresses: false
+  selector:
+    app: elasticsearch
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: es-cluster
+  namespace: efk
+spec:
+  serviceName: elasticsearch-headless
+  replicas: 3
+  selector:
+    matchLabels:
+      app: elasticsearch
+  template:
+    metadata:
+      name: elasticsearch
+      labels:
+        app: elasticsearch
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+      automountServiceAccountToken: true
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                    - elasticsearch
+              topologyKey: kubernetes.io/hostname
+      enableServiceLinks: true
+      containers:
+        - name: elasticsearch
+          image: docker.elastic.co/elasticsearch/elasticsearch:8.3.1
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 1000
+          ports:
+            - containerPort: 9200
+              name: http
+              protocol: TCP
+            - containerPort: 9300
+              name: inter-node
+              protocol: TCP
+          env:
+            - name: cluster.name
+              value: "elasticsearch"
+            - name: node.name
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: discovery.seed_hosts
+              value: "elasticsearch-headless"
+            - name: cluster.initial_master_nodes
+              value: "es-cluster-0,es-cluster-1,es-cluster-2"
+            - name: ES_JAVA_OPTS
+              value: "-Xms512m -Xmx512m"
+            - name: xpack.security.enabled
+              value: "false"
+            # below key/values added but don't know why
+            - name: network.host
+              value: "0.0.0.0"
+            - name: cluster.deprecation_indexing.enabled
+              value: "false"
+            - name: node.data
+              value: "true"
+            - name: node.ingest
+              value: "true"
+            - name: node.master
+              value: "true"
+            - name: node.ml
+              value: "true"
+            - name: node.remote_cluster_client
+              value: "true"
+          volumeMounts:
+            - name: es-data
+              mountPath: /usr/share/elasticsearch/data
+      initContainers:
+        - name: fix-permissions
+          image: busybox
+          command: [ "sh", "-c", "chown -R 1000:1000 /usr/share/elasticsearch/data" ]
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: es-data
+              mountPath: /usr/share/elasticsearch/data
+        - name: increase-vm-max-map
+          image: busybox
+          command: [ "sysctl", "-w", "vm.max_map_count=262144" ]
+          securityContext:
+            privileged: true
+  volumeClaimTemplates:
+    - metadata:
+        name: es-data
+        labels:
+          app: elasticsearch
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 5Gi
