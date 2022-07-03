@@ -1,0 +1,17 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: elasticsearch
+  namespace: efk
+  labels:
+    app: elasticsearch
+spec:
+  ports:
+    - port: 9200
+      name: http
+    - port: 9300
+      name: inter-node
+  clusterIP: None # Headless service
+  publishNotReadyAddresses: true
+  selector:
+    app: elasticsearch

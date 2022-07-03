@@ -1,49 +1,10 @@
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: elasticsearch-headless
-  namespace: efk
-  labels:
-    app: elasticsearch
-spec:
-  ports:
-    - port: 9200
-      name: http
-    - port: 9300
-      name: inter-node
-  clusterIP: None # Headless service
-  publishNotReadyAddresses: true
-  selector:
-    app: elasticsearch
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: elasticsearch
-  namespace: efk
-  labels:
-    app: elasticsearch
-spec:
-  type: ClusterIP
-  ports:
-    - port: 9200
-      name: http
-      protocol: TCP
-    - port: 9300
-      name: inter-node
-      protocol: TCP
-  publishNotReadyAddresses: false
-  selector:
-    app: elasticsearch
----
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: es-cluster
+  name: elasticsearch
   namespace: efk
 spec:
-  serviceName: elasticsearch-headless
+  serviceName: elasticsearch
   replicas: 3
   selector:
     matchLabels:
@@ -93,11 +54,9 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: discovery.seed_hosts
-              value: "elasticsearch-headless"
+              value: "elasticsearch"
             - name: cluster.initial_master_nodes
-              value: "es-cluster-0,es-cluster-1,es-cluster-2"
-            - name: ES_JAVA_OPTS
-              value: "-Xms512m -Xmx512m"
+              value: "es-0,es-1,es-2"
             - name: xpack.security.enabled
               value: "false"
           volumeMounts:
@@ -112,6 +71,7 @@ spec:
   volumeClaimTemplates:
     - metadata:
         name: es-data
+        namespace: efk
         labels:
           app: elasticsearch
       spec:
