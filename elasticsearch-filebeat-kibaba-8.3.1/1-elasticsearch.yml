@@ -6,16 +6,16 @@ metadata:
 kind: Service
 apiVersion: v1
 metadata:
-  name: elasticsearch-master
+  name: elasticsearch
   namespace: efk
   labels:
-    app: "elasticsearch-master"
+    app: "elasticsearch"
   annotations:
     {}
 spec:
   type: ClusterIP
   selector:
-    app: "elasticsearch-master"
+    app: "elasticsearch"
   publishNotReadyAddresses: false
   ports:
   - name: http
@@ -28,17 +28,17 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name: elasticsearch-master-headless
+  name: elasticsearch-headless
   namespace: efk
   labels:
-    app: "elasticsearch-master"
+    app: "elasticsearch"
   annotations:
     service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
 spec:
   clusterIP: None
   publishNotReadyAddresses: true
   selector:
-    app: "elasticsearch-master"
+    app: "elasticsearch"
   ports:
   - name: http
     port: 9200
@@ -48,24 +48,24 @@ spec:
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: elasticsearch-master
+  name: elasticsearch
   namespace: efk
   labels:
-    app: "elasticsearch-master"
+    app: "elasticsearch"
   annotations:
     esMajorVersion: "8"
 spec:
-  serviceName: elasticsearch-master-headless
+  serviceName: elasticsearch-headless
   selector:
     matchLabels:
-      app: "elasticsearch-master"
+      app: "elasticsearch"
   replicas: 3
   podManagementPolicy: Parallel
   updateStrategy:
     type: RollingUpdate
   volumeClaimTemplates:
   - metadata:
-      name: elasticsearch-master
+      name: elasticsearch
       namespace: efk
     spec:
       accessModes:
@@ -75,10 +75,10 @@ spec:
           storage: 5Gi
   template:
     metadata:
-      name: "elasticsearch-master"
+      name: "elasticsearch"
       namespace: efk
       labels:
-        app: "elasticsearch-master"
+        app: "elasticsearch"
     spec:
       securityContext:
         fsGroup: 1000
@@ -92,7 +92,7 @@ spec:
               - key: app
                 operator: In
                 values:
-                - "elasticsearch-master"
+                - "elasticsearch"
             topologyKey: kubernetes.io/hostname
       terminationGracePeriodSeconds: 120
       enableServiceLinks: true
@@ -130,9 +130,9 @@ spec:
               fieldRef:
                 fieldPath: metadata.name
           - name: cluster.initial_master_nodes
-            value: "elasticsearch-master-0,elasticsearch-master-1,elasticsearch-master-2,"
+            value: "elasticsearch-0,elasticsearch-1,elasticsearch-2,"
           - name: discovery.seed_hosts
-            value: "elasticsearch-master-headless"
+            value: "elasticsearch-headless"
           - name: cluster.name
             value: "elasticsearch"
           - name: network.host
@@ -142,5 +142,5 @@ spec:
           - name: xpack.security.enabled
             value: "false"
         volumeMounts:
-          - name: "elasticsearch-master"
+          - name: "elasticsearch"
             mountPath: /usr/share/elasticsearch/data
