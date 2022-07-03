@@ -1,17 +1,18 @@
+---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: filebeat-filebeat
+  name: filebeat
   namespace: efk
   labels:
-    app: "filebeat-filebeat"
+    app: "filebeat"
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: filebeat-filebeat-daemonset-config
+  name: filebeat-daemonset-config
   labels:
-    app: "filebeat-filebeat"
+    app: "filebeat"
 data:
   filebeat.yml: |
     filebeat.inputs:
@@ -32,10 +33,10 @@ data:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: filebeat-filebeat-cluster-role
+  name: filebeat-cluster-role
   namespace: efk
   labels:
-    app: "filebeat-filebeat"
+    app: "filebeat"
 rules:
   - apiGroups:
     - ""
@@ -59,26 +60,26 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: filebeat-filebeat-cluster-role-binding
+  name: filebeat-cluster-role-binding
   namespace: efk
   labels:
-    app: "filebeat-filebeat"
+    app: "filebeat"
 roleRef:
   kind: ClusterRole
-  name: filebeat-filebeat-cluster-role
+  name: filebeat-cluster-role
   apiGroup: rbac.authorization.k8s.io
 subjects:
 - kind: ServiceAccount
-  name: filebeat-filebeat
+  name: filebeat
   namespace: efk
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: filebeat-filebeat-role
+  name: filebeat-role
   namespace: efk
   labels:
-    app: "filebeat-filebeat"
+    app: "filebeat"
 rules:
   - apiGroups:
       - coordination.k8s.io
@@ -89,40 +90,40 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: filebeat-filebeat-role-binding
+  name: filebeat-role-binding
   namespace: efk
   labels:
-    app: "filebeat-filebeat"
+    app: "filebeat"
 roleRef:
   kind: Role
-  name: filebeat-filebeat-role
+  name: filebeat-role
   apiGroup: rbac.authorization.k8s.io
 subjects:
 - kind: ServiceAccount
-  name: filebeat-filebeat
+  name: filebeat
   namespace: default
 ---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: filebeat-filebeat
+  name: filebeat
   namespace: efk
   labels:
-    app: "filebeat-filebeat"
+    app: "filebeat"
 spec:
   selector:
     matchLabels:
-      app: "filebeat-filebeat"
+      app: "filebeat"
   updateStrategy:
     rollingUpdate:
       maxUnavailable: 1
     type: RollingUpdate
   template:
     metadata:
-      name: "filebeat-filebeat"
+      name: "filebeat"
       namespace: efk
       labels:
-        app: "filebeat-filebeat"
+        app: "filebeat"
     spec:
       tolerations: 
         []
@@ -130,16 +131,16 @@ spec:
         {}
       affinity: 
         {}
-      serviceAccountName: filebeat-filebeat
+      serviceAccountName: filebeat
       terminationGracePeriodSeconds: 30
       volumes:
       - name: filebeat-config
         configMap:
           defaultMode: 0600
-          name: filebeat-filebeat-daemonset-config
+          name: filebeat-daemonset-config
       - name: data
         hostPath:
-          path: /var/lib/filebeat-filebeat-default-data
+          path: /var/lib/filebeat-default-data
           type: DirectoryOrCreate
       - name: varlibdockercontainers
         hostPath:
