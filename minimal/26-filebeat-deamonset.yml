@@ -9,6 +9,10 @@ spec:
   selector:
     matchLabels:
       app: filebeat
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
   template:
     metadata:
       name: filebeat
@@ -18,19 +22,15 @@ spec:
     spec:
       serviceAccountName: filebeat
       terminationGracePeriodSeconds: 30
-      hostNetwork: true
-      dnsPolicy: ClusterFirstWithHostNet
       containers:
         - name: filebeat
           image: docker.elastic.co/beats/filebeat:8.3.1
+          imagePullPolicy: IfNotPresent
+          # https://www.elastic.co/guide/en/beats/filebeat/current/http-endpoint.html
           args: [
             "-e", "-E", "http.enabled=true"
           ]
           env:
-            - name: ELASTICSEARCH_HOST
-              value: elasticsearch
-            - name: ELASTICSEARCH_PORT
-              value: "9200"
             - name: NODE_NAME
               valueFrom:
                 fieldRef:
@@ -42,7 +42,7 @@ spec:
           envFrom:
             [ ]
           securityContext:
-            runAsUser: 1000
+            runAsUser: 0
             privileged: false
           resources:
             limits:
@@ -81,3 +81,6 @@ spec:
           hostPath:
             path: /var/lib/filebeat-data
             type: DirectoryOrCreate
+        - name: varrundockersock
+          hostPath:
+            path: /var/run/docker.sock

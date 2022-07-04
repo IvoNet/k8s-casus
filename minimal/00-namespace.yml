@@ -1,3 +1,5 @@
+# efk - elasticsearch / filebeat / kibana namespace
+---
 apiVersion: v1
 kind: Namespace
 metadata:

@@ -1,7 +1,9 @@
+# Headless service because it is only used as 'dns' like provider for the statefulset
+---
 kind: Service
 apiVersion: v1
 metadata:
-  name: elasticsearch
+  name: elasticsearch-headless
   namespace: efk
   labels:
     app: elasticsearch
@@ -12,6 +14,6 @@ spec:
     - port: 9300
       name: inter-node
   clusterIP: None # Headless service
-  publishNotReadyAddresses: true
+#  publishNotReadyAddresses: true
   selector:
     app: elasticsearch
