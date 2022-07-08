@@ -222,4 +222,10 @@ k get svc -w
 k delete namespace efk
 ```
 
+# TODO
+
 Unfortunately I forgot to add extra stuff as I struggled a lot with the filebeat and did not track my changes enough. I will probably do this in the future but not in the near future.
+
+- Goal is to make this setup as minimal as possible for the sake of simplicity and demo purposes.
+- I will add/remove more stuff as I need it.
+
