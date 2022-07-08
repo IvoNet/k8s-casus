@@ -221,3 +221,5 @@ k get svc -w
 ```shell
 k delete namespace efk
 ```
+
+Unfortunately I forgot to add extra stuff as I struggled a lot with the filebeat and did not track my changes enough. I will probably do this in the future but not in the near future.
