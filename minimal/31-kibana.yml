@@ -12,16 +12,21 @@ spec:
       app: kibana
   template:
     metadata:
+      namespace: efk
       labels:
         app: kibana
     spec:
+      automountServiceAccountToken: true
+      securityContext:
+        fsGroup: 1000
       containers:
       - name: kibana
-        image: docker.elastic.co/kibana/kibana:8.3.1
+        image: "docker.elastic.co/kibana/kibana:8.3.1"
+        imagePullPolicy: "IfNotPresent"
         ports:
         - containerPort: 5601
         env:
-          - name: ELASTICSEARCH_URL
-            value: http://elasticsearch:9200
+          - name: ELASTICSEARCH_HOSTS
+            value: http://elasticsearch-headless:9200
           - name: SERVER_HOST
             value: "0.0.0.0"

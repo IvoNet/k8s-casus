@@ -21,4 +21,4 @@ data:
                     logs_path: "/var/log/containers/"
     output.elasticsearch:
       host: '${NODE_NAME}'
-      hosts: [ '${ELASTICSEARCH_HOST:elasticsearch}:${ELASTICSEARCH_PORT:9200}' ]
+      hosts: [ '${ELASTICSEARCH_HOST:elasticsearch-headless}:${ELASTICSEARCH_PORT:9200}' ]

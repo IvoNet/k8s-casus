@@ -46,13 +46,14 @@ spec:
             privileged: false
           resources:
             limits:
+              cpu: 1000m
               memory: 200Mi
             requests:
               cpu: 100m
               memory: 100Mi
           volumeMounts:
             - name: config
-              mountPath: /etc/filebeat.yml
+              mountPath: /usr/share/filebeat/filebeat.yml
               readOnly: true
               subPath: filebeat.yml
             - name: data
