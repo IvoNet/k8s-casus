@@ -64,7 +64,7 @@ To fix this we need to add an initContainer to the StatefulSet that corrects the
           mountPath: /usr/share/elasticsearch/data
 ```
 
-- this seemed to go alright but it failes on `vm.max_map_count`
+- this seemed to go alright but it fails on `vm.max_map_count`
 
 ```text
 vice","elasticsearch.node.name":"es-cluster-0","elasticsearch.cluster.name":"docker-cluster"}
@@ -98,7 +98,7 @@ ERROR: Elasticsearch did not exit normally - check the logs at /usr/share/elasti
 ERROR: [2] bootstrap checks failed. You must address the points described in the following [2] lines before starting Elasticsearch.
 ```
 
-- Editted the StatefulSet and added the env setting `xpack.security.enabled` to `"false"`
+- Edited the StatefulSet and added the env setting `xpack.security.enabled` to `"false"`
 
 ```bash
 k edit statefulset.apps/es-cluster
@@ -107,7 +107,7 @@ k edit statefulset.apps/es-cluster
           - name: xpack.security.enabled
             value: "false"
 # exit vi
-#  kill the pods
+#  kill the pods because they will only receive the new config at complete restart
 k delete pod/es-cluster-0
 k delete pod/es-cluster-1
 k delete pod/es-cluster-2
@@ -124,12 +124,13 @@ ERROR: Elasticsearch did not exit normally - check the logs at /usr/share/elasti
 ```
 
 - so lets configure `discovery.seed_hosts`, `discovery.seed_providers`, `cluster.initial_master_nodes`
-- google /  https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-discovery-settings.html
+- google ->  https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-discovery-settings.html
 - resulting in my situation in see the elasticsearch.yml files
 
 
 ```shell
 k delete namespace efk && k create namespace efk 
+for i in *.yml; do kubectl create -f $i -n efk; done
 ```
 
 - now they all seem to be running :-)
